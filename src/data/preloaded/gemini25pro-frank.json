@@ -1,6 +1,6 @@
 {
   "id": "preloaded-gemini25pro-frank",
-  "title": "Gemini 2.5 Pro + Frank (Weather Control)",
+  "title": "The Weather Guardian",
   "modelId": "google/gemini-2.5-pro",
   "modelLabel": "Gemini 2.5 Pro",
   "characterId": "frank",
