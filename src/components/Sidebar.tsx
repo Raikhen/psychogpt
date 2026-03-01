@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Conversation } from "@/types";
 import { PRELOADED_CONVERSATIONS } from "@/data/preloaded";
 import { buildConversationSubheader } from "@/lib/conversations";
@@ -32,6 +32,7 @@ export default function Sidebar({
   isResizing,
 }: SidebarProps) {
   const router = useRouter();
+  const [search, setSearch] = useState("");
 
   const forkedIds = useMemo(
     () => new Set(conversations.map((c) => c.preloadedOrigin).filter(Boolean)),
@@ -47,6 +48,16 @@ export default function Sidebar({
       (a, b) => b.updatedAt - a.updatedAt
     );
   }, [conversations, forkedIds]);
+
+  const filteredItems = useMemo(() => {
+    if (!search.trim()) return allItems;
+    const q = search.toLowerCase();
+    return allItems.filter((c) =>
+      [c.title, c.aiTitle, c.characterName, c.modelLabel]
+        .filter(Boolean)
+        .some((field) => field!.toLowerCase().includes(q))
+    );
+  }, [allItems, search]);
 
   return (
     <>
@@ -88,7 +99,7 @@ export default function Sidebar({
               </svg>
             </button>
             <Link href="/" className="min-w-0">
-              <h1 className="font-[family-name:var(--font-rock-salt)] text-[18px] text-text-primary leading-tight">
+              <h1 className="font-[family-name:var(--font-pangolin)] text-[18px] text-text-primary leading-tight">
                 PsychoGPT
               </h1>
             </Link>
@@ -117,10 +128,58 @@ export default function Sidebar({
             </button>
           </div>
 
+          <div className="mx-3 border-t border-border-subtle" />
+
+          {/* Search */}
+          <div className="px-3 py-3">
+            <div className="relative">
+              <svg
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-text-muted pointer-events-none"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                />
+              </svg>
+              <input
+                type="text"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search conversations..."
+                className="w-full bg-surface-0 border border-border-subtle rounded-xl text-[13px] text-text-primary placeholder:text-text-muted pl-8 pr-7 py-1.5 outline-none focus:border-border-default transition-colors"
+              />
+              {search && (
+                <button
+                  onClick={() => setSearch("")}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-secondary transition-colors"
+                >
+                  <svg
+                    className="w-3.5 h-3.5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              )}
+            </div>
+          </div>
+
           {/* List */}
           <div className="flex-1 overflow-y-auto px-3 pb-3">
             <div className="space-y-0.5">
-              {allItems.map((c) => (
+              {filteredItems.map((c) => (
                 <SidebarItem
                   key={c.id}
                   id={c.id}
@@ -133,28 +192,14 @@ export default function Sidebar({
                   }
                 />
               ))}
-              {allItems.length === 0 && (
+              {filteredItems.length === 0 && (
                 <p className="text-[12px] text-text-muted px-2 py-3">
-                  No conversations yet
+                  {search ? "No matches" : "No conversations yet"}
                 </p>
               )}
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="px-5 py-3 border-t border-border-subtle">
-            <p className="text-[11px] text-text-muted whitespace-nowrap">
-              Based on{" "}
-              <a
-                href="https://www.alignmentforum.org/posts/iGF7YcnQkEbwvYLPA/ai-induced-psychosis-a-shallow-investigation"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-text-tertiary hover:text-text-secondary underline underline-offset-2 transition-colors"
-              >
-                Tim Hua&apos;s research
-              </a>
-            </p>
-          </div>
         </div>
 
         {/* Resize handle */}

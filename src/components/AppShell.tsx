@@ -10,6 +10,7 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 import Sidebar from "./Sidebar";
+import { ToastProvider } from "./Toast";
 import { useConversations } from "@/hooks/useConversations";
 import { MODELS } from "@/lib/models";
 import { CHARACTERS } from "@/lib/characters";
@@ -115,7 +116,8 @@ export default function AppShell({ children }: { children: ReactNode }) {
   }, [sidebarWidth]);
 
   return (
-    <AppContext.Provider
+    <ToastProvider>
+      <AppContext.Provider
       value={{
         conversations,
         loaded,
@@ -176,6 +178,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           {loaded && children}
         </main>
       </div>
-    </AppContext.Provider>
+      </AppContext.Provider>
+    </ToastProvider>
   );
 }

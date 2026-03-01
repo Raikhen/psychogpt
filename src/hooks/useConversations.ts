@@ -97,8 +97,6 @@ export function useConversations() {
         createdAt: Date.now(),
         updatedAt: Date.now(),
         preloadedOrigin: preloaded.id,
-        dangerLevel: preloaded.dangerLevel,
-        dangerReason: preloaded.dangerReason,
         sourceUrl: preloaded.sourceUrl,
       };
       const updated = [convo, ...current];

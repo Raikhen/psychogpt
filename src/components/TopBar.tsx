@@ -1,20 +1,30 @@
 "use client";
 
-import ModelSelector from "./ModelSelector";
+import { Conversation } from "@/types";
+import { exportAsMarkdown, downloadFile } from "@/lib/export";
 
 interface TopBarProps {
-  modelId: string;
   onToggleSidebar: () => void;
   title?: string;
   sourceUrl?: string;
+  conversation?: Conversation;
 }
 
 export default function TopBar({
-  modelId,
   onToggleSidebar,
   title,
   sourceUrl,
+  conversation,
 }: TopBarProps) {
+  const handleExport = () => {
+    if (!conversation) return;
+    const md = exportAsMarkdown(conversation);
+    const slug = (conversation.aiTitle ?? conversation.title)
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/(^-|-$)/g, "");
+    downloadFile(md, `${slug}.md`);
+  };
   return (
     <div className="border-b border-border-subtle px-4 py-2.5">
       <div className="flex items-center gap-3">
@@ -38,7 +48,7 @@ export default function TopBar({
         </button>
 
         {title && (
-          <div className="flex items-center gap-1.5 min-w-0">
+          <div className="flex items-center gap-2 min-w-0">
             <h2 className="text-[14px] font-medium text-text-primary truncate">
               {title}
             </h2>
@@ -47,11 +57,11 @@ export default function TopBar({
                 href={sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="shrink-0 text-text-tertiary hover:text-accent transition-colors"
+                className="shrink-0 p-1 rounded-md text-text-tertiary hover:text-accent transition-colors"
                 title="View original research"
               >
                 <svg
-                  className="w-3.5 h-3.5"
+                  className="w-4.5 h-4.5"
                   fill="none"
                   viewBox="0 0 24 24"
                   stroke="currentColor"
@@ -70,9 +80,27 @@ export default function TopBar({
 
         <div className="flex-1" />
 
-        <div className="flex items-center gap-3">
-          <ModelSelector value={modelId} readOnly />
-        </div>
+        {conversation && conversation.messages.length > 0 && (
+          <button
+            onClick={handleExport}
+            className="shrink-0 p-1 rounded-md text-text-tertiary hover:text-accent transition-colors cursor-pointer"
+            title="Export as Markdown"
+          >
+            <svg
+              className="w-4.5 h-4.5"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"
+              />
+            </svg>
+          </button>
+        )}
       </div>
     </div>
   );

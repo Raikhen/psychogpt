@@ -12,6 +12,7 @@ import { useStreamingSuggestion } from "@/hooks/useStreamingSuggestion";
 import ChatWindow from "@/components/ChatWindow";
 import ChatInput from "@/components/ChatInput";
 import TopBar from "@/components/TopBar";
+import { useToast } from "@/components/Toast";
 import { Message } from "@/types";
 
 export default function ChatPage() {
@@ -26,6 +27,7 @@ export default function ChatPage() {
     setSidebarOpen,
   } = useAppContext();
 
+  const { showToast } = useToast();
   const { isStreaming, streamingContent, sendMessage, stopStreaming } = useChat();
   const { displayedText: autoTypedText, isAutoTyping, startTyping, completeImmediately, reset: resetAutoType } = useAutoType();
   const {
@@ -203,16 +205,15 @@ export default function ChatPage() {
         },
         // onError
         (error) => {
-          const errorContent = `Error: ${error}`;
-          updateLastMessage(id, errorContent);
+          // Remove the empty assistant placeholder
           setLiveMessages((prev) => {
             const updated = [...prev];
-            updated[updated.length - 1] = {
-              ...updated[updated.length - 1],
-              content: errorContent,
-            };
+            if (updated.length > 0 && updated[updated.length - 1].role === "assistant" && !updated[updated.length - 1].content) {
+              updated.pop();
+            }
             return updated;
           });
+          showToast(error || "Something went wrong. Please try again.");
         }
       );
     },
@@ -229,6 +230,7 @@ export default function ChatPage() {
       cancelSuggestion,
       clearSuggestion,
       fetchStreamingSuggestion,
+      showToast,
     ]
   );
 
@@ -256,10 +258,10 @@ export default function ChatPage() {
   return (
     <>
       <TopBar
-        modelId={modelId}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
         title={displayTitle}
         sourceUrl={sourceUrl}
+        conversation={existingConvo}
       />
 
       <ChatWindow

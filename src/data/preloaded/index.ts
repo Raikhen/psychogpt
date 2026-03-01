@@ -5,7 +5,9 @@ import deepseekEthan from "./deepseek-ethan.json";
 import deepseekZara from "./deepseek-zara.json";
 import deepseekRachel from "./deepseek-rachel.json";
 import deepseekTim from "./deepseek-tim.json";
+import deepseekJessica from "./deepseek-jessica.json";
 import chatgpt4oAdrian from "./chatgpt4o-adrian.json";
+import chatgpt4oColin from "./chatgpt4o-colin.json";
 import gemini25proEthan from "./gemini25pro-ethan.json";
 import gemini25proFrank from "./gemini25pro-frank.json";
 import gemini25proMichelle from "./gemini25pro-michelle.json";
@@ -20,9 +22,11 @@ export const PRELOADED_CONVERSATIONS: Conversation[] = [
   asConversation(deepseekRachel),
   asConversation(deepseekNathan),
   asConversation(deepseekTim),
+  asConversation(deepseekJessica),
   asConversation(gemini25proEthan),
   asConversation(gemini25proMichelle),
   asConversation(chatgpt4oAdrian),
+  asConversation(chatgpt4oColin),
   asConversation(gemini25proFrank),
 ];
 

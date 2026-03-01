@@ -7,8 +7,6 @@ export interface Message {
   timestamp: number;
 }
 
-export type DangerLevel = "critical" | "warning" | "safe";
-
 export interface ModelInfo {
   id: string;
   label: string;
@@ -36,8 +34,6 @@ export interface Conversation {
   updatedAt: number;
   /** Set when this conversation was forked from a preloaded transcript */
   preloadedOrigin?: string;
-  dangerLevel?: DangerLevel;
-  dangerReason?: string;
   /** URL to original research source (preloaded transcripts only) */
   sourceUrl?: string;
   /** AI-generated title replacing the default */

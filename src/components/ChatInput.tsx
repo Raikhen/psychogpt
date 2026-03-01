@@ -140,7 +140,7 @@ export default function ChatInput({
             <button
               onClick={handleSubmit}
               disabled={disabled || !text.trim()}
-              className="flex-shrink-0 flex items-center justify-center w-[48px] h-[48px] bg-accent hover:bg-accent-hover disabled:bg-surface-3 disabled:text-text-muted text-white rounded-2xl transition-all disabled:cursor-not-allowed"
+              className="flex-shrink-0 flex items-center justify-center w-[48px] h-[48px] bg-accent hover:bg-accent-hover disabled:bg-surface-3 disabled:text-text-muted text-white rounded-2xl transition-all cursor-pointer disabled:cursor-not-allowed"
               title="Send message"
             >
               <svg
