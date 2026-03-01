@@ -13,7 +13,7 @@ import Sidebar from "./Sidebar";
 import { useConversations } from "@/hooks/useConversations";
 import { MODELS } from "@/lib/models";
 import { CHARACTERS } from "@/lib/characters";
-import { Conversation, Message, PreloadedConversation } from "@/types";
+import { Conversation, Message } from "@/types";
 
 const SIDEBAR_DEFAULT = 320;
 const SIDEBAR_MIN = 200;
@@ -23,7 +23,7 @@ interface AppContextType {
   conversations: Conversation[];
   loaded: boolean;
   createConversation: (modelId: string, characterId: string) => Conversation;
-  forkPreloaded: (preloaded: PreloadedConversation) => Conversation;
+  forkPreloaded: (preloaded: Conversation) => Conversation;
   updateConversation: (id: string, patch: Partial<Conversation>) => void;
   addMessage: (convoId: string, message: Message) => void;
   updateLastMessage: (convoId: string, content: string) => void;

@@ -26,7 +26,7 @@ export async function POST(req: Request) {
         messages: [
           {
             role: "user",
-            content: `Generate a short title (3-6 words) for this conversation. Return ONLY the title text, nothing else.\n\n${conversationText}`,
+            content: `Summarize the key topic of this conversation in 3-6 words. Return ONLY the title text, nothing else.\n\n${conversationText}`,
           },
         ],
         stream: false,

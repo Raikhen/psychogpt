@@ -3,7 +3,7 @@
 import { useMemo } from "react";
 import { Conversation } from "@/types";
 import { PRELOADED_CONVERSATIONS } from "@/data/preloaded";
-import { getModelLabel } from "@/lib/models";
+import { buildConversationSubheader } from "@/lib/conversations";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import SidebarItem from "./SidebarItem";
@@ -33,21 +33,20 @@ export default function Sidebar({
 }: SidebarProps) {
   const router = useRouter();
 
-  // Only show conversations that have at least one message
-  const nonEmptyConversations = useMemo(
-    () => conversations.filter((c) => c.messages.length > 0),
-    [conversations]
-  );
-
   const forkedIds = useMemo(
     () => new Set(conversations.map((c) => c.preloadedOrigin).filter(Boolean)),
     [conversations]
   );
 
-  const unforkedPreloaded = useMemo(
-    () => PRELOADED_CONVERSATIONS.filter((p) => !forkedIds.has(p.id)),
-    [forkedIds]
-  );
+  const allItems = useMemo(() => {
+    const userConvos = conversations.filter((c) => c.messages.length > 0);
+    const virtualPreloaded = PRELOADED_CONVERSATIONS.filter(
+      (p) => !forkedIds.has(p.id)
+    );
+    return [...userConvos, ...virtualPreloaded].sort(
+      (a, b) => b.updatedAt - a.updatedAt
+    );
+  }, [conversations, forkedIds]);
 
   return (
     <>
@@ -121,31 +120,20 @@ export default function Sidebar({
           {/* List */}
           <div className="flex-1 overflow-y-auto px-3 pb-3">
             <div className="space-y-0.5">
-              <p className="text-[11px] font-medium text-text-muted px-2 pb-1.5 pt-1">
-                Conversations
-              </p>
-              {nonEmptyConversations.map((c) => (
+              {allItems.map((c) => (
                 <SidebarItem
                   key={c.id}
                   id={c.id}
-                  title={c.title}
-                  subtitle={c.dangerReason ?? getModelLabel(c.modelId)}
+                  title={c.aiTitle ?? c.title}
+                  subtitle={buildConversationSubheader(c.modelId, c.characterId)}
                   onDelete={
-                    !c.preloadedOrigin
+                    !c.preloadedOrigin && c.createdAt > 0
                       ? () => onDeleteConversation(c.id)
                       : undefined
                   }
                 />
               ))}
-              {unforkedPreloaded.map((c) => (
-                <SidebarItem
-                  key={c.id}
-                  id={c.id}
-                  title={c.title}
-                  subtitle={c.dangerReason}
-                />
-              ))}
-              {nonEmptyConversations.length === 0 && unforkedPreloaded.length === 0 && (
+              {allItems.length === 0 && (
                 <p className="text-[12px] text-text-muted px-2 py-3">
                   No conversations yet
                 </p>

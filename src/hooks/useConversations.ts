@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Conversation, Message } from "@/types";
-import { PreloadedConversation } from "@/types";
+import { getModelLabel } from "@/lib/models";
+import { getCharacter } from "@/lib/characters";
 
 const STORAGE_KEY = "ai-psychosis-conversations";
 
@@ -20,18 +21,35 @@ function saveConversations(convos: Conversation[]) {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(convos));
 }
 
+/** Backfill modelLabel and characterName on old conversations that lack them */
+function migrateConversations(convos: Conversation[]): Conversation[] {
+  let changed = false;
+  const migrated = convos.map((c) => {
+    if (c.modelLabel && c.characterName) return c;
+    changed = true;
+    return {
+      ...c,
+      modelLabel: c.modelLabel || getModelLabel(c.modelId),
+      characterName: c.characterName || (getCharacter(c.characterId)?.name ?? c.characterId),
+    };
+  });
+  return changed ? migrated : convos;
+}
+
 export function useConversations() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    const loaded = loadConversations();
+    let loaded = loadConversations();
     // Prune empty conversations left over from abandoned sessions
     const nonEmpty = loaded.filter((c) => c.messages.length > 0);
-    if (nonEmpty.length < loaded.length) {
-      saveConversations(nonEmpty);
+    // Backfill new fields on old data
+    const migrated = migrateConversations(nonEmpty);
+    if (migrated !== nonEmpty || nonEmpty.length < loaded.length) {
+      saveConversations(migrated);
     }
-    setConversations(nonEmpty);
+    setConversations(migrated);
     setLoaded(true);
   }, []);
 
@@ -42,11 +60,14 @@ export function useConversations() {
 
   const createConversation = useCallback(
     (modelId: string, characterId: string): Conversation => {
+      const character = getCharacter(characterId);
       const convo: Conversation = {
         id: `convo-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
         title: "New Conversation",
         modelId,
+        modelLabel: getModelLabel(modelId),
         characterId,
+        characterName: character?.name ?? characterId,
         messages: [],
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -59,7 +80,7 @@ export function useConversations() {
   );
 
   const forkPreloaded = useCallback(
-    (preloaded: PreloadedConversation): Conversation => {
+    (preloaded: Conversation): Conversation => {
       // Check if already forked
       const current = loadConversations();
       const existing = current.find((c) => c.preloadedOrigin === preloaded.id);
@@ -69,13 +90,16 @@ export function useConversations() {
         id: preloaded.id,
         title: preloaded.title,
         modelId: preloaded.modelId,
+        modelLabel: preloaded.modelLabel || getModelLabel(preloaded.modelId),
         characterId: preloaded.characterId,
+        characterName: preloaded.characterName || (getCharacter(preloaded.characterId)?.name ?? preloaded.characterId),
         messages: [...preloaded.messages],
         createdAt: Date.now(),
         updatedAt: Date.now(),
         preloadedOrigin: preloaded.id,
         dangerLevel: preloaded.dangerLevel,
         dangerReason: preloaded.dangerReason,
+        sourceUrl: preloaded.sourceUrl,
       };
       const updated = [convo, ...current];
       persist(updated);

@@ -60,8 +60,6 @@ export default function ChatPage() {
   const exchangeCountRef = useRef(0);
   // Track whether auto-type has been triggered for this conversation
   const autoTypeTriggeredRef = useRef(false);
-  // Track title to display (updates reactively)
-  const [displayTitle, setDisplayTitle] = useState<string | undefined>(undefined);
 
   // Generate a title for the conversation using the API
   const generateTitle = useCallback(
@@ -82,8 +80,7 @@ export default function ChatPage() {
         if (!res.ok) return;
         const { title } = await res.json();
         if (title) {
-          updateConversation(convoId, { title });
-          setDisplayTitle(title);
+          updateConversation(convoId, { aiTitle: title });
         }
       } catch {
         // Title generation is best-effort, don't block on errors
@@ -98,15 +95,11 @@ export default function ChatPage() {
     exchangeCountRef.current = 0;
     resetAutoType();
     clearSuggestion();
-    setDisplayTitle(undefined);
     const convo = getConversation(id);
     if (convo) {
       setLiveMessages(convo.messages);
       setModelId(convo.modelId);
       setCharacterId(convo.characterId);
-      if (convo.title && convo.title !== "New Conversation") {
-        setDisplayTitle(convo.title);
-      }
     }
   }, [id, getConversation, forked, resetAutoType, clearSuggestion]);
 
@@ -115,6 +108,10 @@ export default function ChatPage() {
   const isPreloadedOrigin = !!preloaded || !!existingConvo?.preloadedOrigin;
   const currentModelLabel = getModelLabel(modelId);
   const currentCharacter = getCharacter(characterId);
+
+  // Derive title and sourceUrl from existing conversation or preloaded data
+  const displayTitle = existingConvo?.aiTitle ?? existingConvo?.title ?? preloaded?.title;
+  const sourceUrl = existingConvo?.sourceUrl ?? preloaded?.sourceUrl;
 
   // Auto-type first message for new conversations (0 messages, not preloaded)
   useEffect(() => {
@@ -253,10 +250,6 @@ export default function ChatPage() {
   }, [isAutoTyping, completeImmediately, cancelSuggestion]);
 
   // Determine what text to prefill into the input.
-  // Keep showing autoTypedText even after typing finishes — React batches
-  // the final `setDisplayedText(full)` and `setIsAutoTyping(false)` together,
-  // so if we gate on `isAutoTyping`, ChatInput never sees the complete text
-  // as `prefillText` and the last few words get dropped.
   const prefillText = autoTypedText || suggestionText;
   const isPrefilling = isAutoTyping || isLoadingSuggestion;
 
@@ -265,8 +258,8 @@ export default function ChatPage() {
       <TopBar
         modelId={modelId}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        title={isPreloadedOrigin ? (preloaded?.title ?? existingConvo?.title) : displayTitle}
-        sourceUrl={preloaded?.sourceUrl}
+        title={displayTitle}
+        sourceUrl={sourceUrl}
       />
 
       <ChatWindow

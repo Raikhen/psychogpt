@@ -18,6 +18,7 @@ export interface ModelInfo {
 export interface CharacterProfile {
   id: string;
   name: string;
+  delusionLabel: string;
   description: string;
   systemPrompt: string;
   image?: string;
@@ -27,7 +28,9 @@ export interface Conversation {
   id: string;
   title: string;
   modelId: string;
+  modelLabel: string;
   characterId: string;
+  characterName: string;
   messages: Message[];
   createdAt: number;
   updatedAt: number;
@@ -35,17 +38,8 @@ export interface Conversation {
   preloadedOrigin?: string;
   dangerLevel?: DangerLevel;
   dangerReason?: string;
-}
-
-export interface PreloadedConversation {
-  id: string;
-  title: string;
-  modelId: string;
-  modelLabel: string;
-  characterId: string;
-  characterName: string;
-  dangerLevel: DangerLevel;
-  dangerReason: string;
-  sourceUrl: string;
-  messages: Message[];
+  /** URL to original research source (preloaded transcripts only) */
+  sourceUrl?: string;
+  /** AI-generated title replacing the default */
+  aiTitle?: string;
 }
