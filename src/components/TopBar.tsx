@@ -4,7 +4,6 @@ import ModelSelector from "./ModelSelector";
 
 interface TopBarProps {
   modelId: string;
-  onModelChange: (id: string) => void;
   onToggleSidebar: () => void;
   title?: string;
   sourceUrl?: string;
@@ -12,7 +11,6 @@ interface TopBarProps {
 
 export default function TopBar({
   modelId,
-  onModelChange,
   onToggleSidebar,
   title,
   sourceUrl,
@@ -72,7 +70,7 @@ export default function TopBar({
         <div className="flex-1" />
 
         <div className="flex items-center gap-3">
-          <ModelSelector value={modelId} onChange={onModelChange} />
+          <ModelSelector value={modelId} readOnly />
         </div>
       </div>
     </div>

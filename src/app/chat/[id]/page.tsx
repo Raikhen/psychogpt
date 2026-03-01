@@ -18,9 +18,9 @@ export default function ChatPage() {
   const { id } = useParams<{ id: string }>();
   const {
     getConversation,
-    updateConversation,
     addMessage,
     updateLastMessage,
+    updateConversation,
     forkPreloaded,
     sidebarOpen,
     setSidebarOpen,
@@ -60,6 +60,37 @@ export default function ChatPage() {
   const exchangeCountRef = useRef(0);
   // Track whether auto-type has been triggered for this conversation
   const autoTypeTriggeredRef = useRef(false);
+  // Track title to display (updates reactively)
+  const [displayTitle, setDisplayTitle] = useState<string | undefined>(undefined);
+
+  // Generate a title for the conversation using the API
+  const generateTitle = useCallback(
+    async (convoId: string) => {
+      const convo = getConversation(convoId);
+      if (!convo || convo.messages.length < 2) return;
+      try {
+        const res = await fetch("/api/title", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            messages: convo.messages.map((m) => ({
+              role: m.role,
+              content: m.content,
+            })),
+          }),
+        });
+        if (!res.ok) return;
+        const { title } = await res.json();
+        if (title) {
+          updateConversation(convoId, { title });
+          setDisplayTitle(title);
+        }
+      } catch {
+        // Title generation is best-effort, don't block on errors
+      }
+    },
+    [getConversation, updateConversation]
+  );
 
   // Load live conversation on mount or id change
   useEffect(() => {
@@ -67,11 +98,15 @@ export default function ChatPage() {
     exchangeCountRef.current = 0;
     resetAutoType();
     clearSuggestion();
+    setDisplayTitle(undefined);
     const convo = getConversation(id);
     if (convo) {
       setLiveMessages(convo.messages);
       setModelId(convo.modelId);
       setCharacterId(convo.characterId);
+      if (convo.title && convo.title !== "New Conversation") {
+        setDisplayTitle(convo.title);
+      }
     }
   }, [id, getConversation, forked, resetAutoType, clearSuggestion]);
 
@@ -79,6 +114,7 @@ export default function ChatPage() {
   const existingConvo = getConversation(id);
   const isPreloadedOrigin = !!preloaded || !!existingConvo?.preloadedOrigin;
   const currentModelLabel = getModelLabel(modelId);
+  const currentCharacter = getCharacter(characterId);
 
   // Auto-type first message for new conversations (0 messages, not preloaded)
   useEffect(() => {
@@ -93,14 +129,6 @@ export default function ChatPage() {
       }
     }
   }, [id, isPreloadedOrigin, getConversation, startTyping]);
-
-  const handleModelChange = useCallback(
-    (newModelId: string) => {
-      setModelId(newModelId);
-      updateConversation(id, { modelId: newModelId });
-    },
-    [id, updateConversation]
-  );
 
   const handleSend = useCallback(
     (text: string) => {
@@ -164,6 +192,9 @@ export default function ChatPage() {
             return updated;
           });
 
+          // Generate title after every assistant response
+          generateTitle(id);
+
           // Fetch streaming suggestion
           exchangeCountRef.current++;
           const character = getCharacter(characterId);
@@ -196,12 +227,22 @@ export default function ChatPage() {
       updateLastMessage,
       getConversation,
       sendMessage,
+      generateTitle,
       resetAutoType,
       cancelSuggestion,
       clearSuggestion,
       fetchStreamingSuggestion,
     ]
   );
+
+  // Manual suggestion request via sparkles button
+  const handleRequestSuggestion = useCallback(() => {
+    const character = getCharacter(characterId);
+    const convo = getConversation(id);
+    if (character && convo && convo.messages.length > 0) {
+      fetchStreamingSuggestion(character, convo.messages, false);
+    }
+  }, [characterId, id, getConversation, fetchStreamingSuggestion]);
 
   // Handle user interrupting a prefill (auto-type or streaming suggestion)
   const handlePrefillInterrupt = useCallback(() => {
@@ -211,17 +252,20 @@ export default function ChatPage() {
     cancelSuggestion();
   }, [isAutoTyping, completeImmediately, cancelSuggestion]);
 
-  // Determine what text to prefill into the input
-  const prefillText = isAutoTyping ? autoTypedText : suggestionText;
+  // Determine what text to prefill into the input.
+  // Keep showing autoTypedText even after typing finishes — React batches
+  // the final `setDisplayedText(full)` and `setIsAutoTyping(false)` together,
+  // so if we gate on `isAutoTyping`, ChatInput never sees the complete text
+  // as `prefillText` and the last few words get dropped.
+  const prefillText = autoTypedText || suggestionText;
   const isPrefilling = isAutoTyping || isLoadingSuggestion;
 
   return (
     <>
       <TopBar
         modelId={modelId}
-        onModelChange={handleModelChange}
         onToggleSidebar={() => setSidebarOpen(!sidebarOpen)}
-        title={isPreloadedOrigin ? (preloaded?.title ?? existingConvo?.title) : undefined}
+        title={isPreloadedOrigin ? (preloaded?.title ?? existingConvo?.title) : displayTitle}
         sourceUrl={preloaded?.sourceUrl}
       />
 
@@ -232,6 +276,8 @@ export default function ChatPage() {
         modelLabel={currentModelLabel}
         isPreloadedOrigin={isPreloadedOrigin}
         preloadedMessageCount={preloaded?.messages.length ?? (isPreloadedOrigin ? messages.length : 0)}
+        characterImage={currentCharacter?.image}
+        characterName={currentCharacter?.name}
       />
 
       <ChatInput
@@ -240,7 +286,10 @@ export default function ChatPage() {
         isStreaming={isStreaming}
         prefillText={prefillText}
         isPrefilling={isPrefilling}
+        isAutoTyping={isAutoTyping}
         onPrefillInterrupt={handlePrefillInterrupt}
+        onRequestSuggestion={handleRequestSuggestion}
+        canRequestSuggestion={messages.length > 0}
       />
     </>
   );

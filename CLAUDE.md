@@ -25,7 +25,7 @@ PsychoGPT is an AI safety red-teaming tool built with Next.js 16 (App Router) + 
 
 **Conversations** live in browser `localStorage` (key: `"ai-psychosis-conversations"`). There is no database.
 
-**Preloaded transcripts** (static JSON in `src/data/preloaded/`) are real conversations from [Tim Hua's research](https://github.com/tim-hua-01/ai-psychosis). When a user opens one, it gets **forked** into localStorage via `forkPreloaded()` so they can continue it interactively. The `preloadedOrigin` field tracks which conversations were forked.
+**Preloaded transcripts** (static JSON in `src/data/preloaded/`) are real conversations from [Tim Hua's research](https://www.alignmentforum.org/posts/iGF7YcnQkEbwvYLPA/ai-induced-psychosis-a-shallow-investigation). When a user opens one, it gets **forked** into localStorage via `forkPreloaded()` so they can continue it interactively. The `preloadedOrigin` field tracks which conversations were forked.
 
 **Chat streaming**: User message → `POST /api/chat` → OpenRouter API (SSE) → chunks parsed in `useChat` hook → progressive UI update. The `useChat` hook manages an `AbortController` for the stop button.
 

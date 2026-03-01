@@ -60,7 +60,7 @@ export default function Sidebar({
 
       <aside
         style={{ width: collapsed ? 0 : width }}
-        className={`fixed lg:static inset-y-0 left-0 z-40 bg-surface-1 border-r border-border-subtle flex flex-col shrink-0 overflow-hidden transform ${
+        className={`fixed lg:relative inset-y-0 left-0 z-40 bg-surface-1 border-r border-border-subtle flex flex-col shrink-0 overflow-hidden transform ${
           isResizing ? "" : "transition-[width] duration-200 ease-out"
         } ${collapsed ? "lg:border-r-0" : ""} ${
           isOpen ? "translate-x-0 !w-[272px]" : "-translate-x-full"
@@ -88,8 +88,7 @@ export default function Sidebar({
                 />
               </svg>
             </button>
-            <Link href="/" className="flex items-center gap-3 min-w-0">
-              <span className="text-3xl leading-none shrink-0">🤪</span>
+            <Link href="/" className="min-w-0">
               <h1 className="font-[family-name:var(--font-rock-salt)] text-[18px] text-text-primary leading-tight">
                 PsychoGPT
               </h1>
@@ -159,7 +158,7 @@ export default function Sidebar({
             <p className="text-[11px] text-text-muted whitespace-nowrap">
               Based on{" "}
               <a
-                href="https://github.com/tim-hua-01/ai-psychosis"
+                href="https://www.alignmentforum.org/posts/iGF7YcnQkEbwvYLPA/ai-induced-psychosis-a-shallow-investigation"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-text-tertiary hover:text-text-secondary underline underline-offset-2 transition-colors"

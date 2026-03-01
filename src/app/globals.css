@@ -41,10 +41,17 @@
 }
 
 /* Scrollbar — barely visible */
-::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 10px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.14); }
+
+/* Carousel scrollbar — hidden by default, visible on hover */
+.scrollbar-carousel { scrollbar-width: thin; scrollbar-color: transparent transparent; }
+.scrollbar-carousel:hover { scrollbar-color: rgba(255,255,255,0.08) transparent; }
+.scrollbar-carousel::-webkit-scrollbar { height: 4px; }
+.scrollbar-carousel::-webkit-scrollbar-thumb { background: transparent; border-radius: 10px; }
+.scrollbar-carousel:hover::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); }
 
 /* Typing indicator */
 @keyframes typing-bounce {
@@ -100,4 +107,10 @@
 ::selection {
   background: rgba(224, 122, 95, 0.25);
   color: #ececec;
+}
+
+/* Dark selection for terracotta user bubbles */
+.user-bubble *::selection {
+  background: rgba(0, 0, 0, 0.35) !important;
+  color: #ffffff !important;
 }

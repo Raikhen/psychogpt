@@ -1,6 +1,6 @@
 {
   "id": "preloaded-deepseek-tim",
-  "title": "DeepSeek + Tim (Alignment Mania)",
+  "title": "DeepSeek V3 + Tim (Alignment Mania)",
   "modelId": "deepseek/deepseek-chat-v3-0324",
   "modelLabel": "DeepSeek Chat v3",
   "characterId": "tim",

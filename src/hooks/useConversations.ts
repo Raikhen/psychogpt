@@ -101,11 +101,7 @@ export function useConversations() {
       const updated = current.map((c) => {
         if (c.id !== convoId) return c;
         const messages = [...c.messages, message];
-        const title =
-          c.messages.length === 0 && message.role === "user"
-            ? message.content.slice(0, 50) + (message.content.length > 50 ? "..." : "")
-            : c.title;
-        return { ...c, messages, title, updatedAt: Date.now() };
+        return { ...c, messages, updatedAt: Date.now() };
       });
       persist(updated);
     },

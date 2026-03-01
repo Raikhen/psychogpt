@@ -20,6 +20,7 @@ export interface CharacterProfile {
   name: string;
   description: string;
   systemPrompt: string;
+  image?: string;
 }
 
 export interface Conversation {

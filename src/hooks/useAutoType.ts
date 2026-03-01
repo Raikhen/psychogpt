@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 
-const CHAR_DELAY = 30; // ms per character
+const WORD_DELAY = 25; // ms per word
 
 export function useAutoType() {
   const [displayedText, setDisplayedText] = useState("");
@@ -19,12 +19,16 @@ export function useAutoType() {
   }, []);
 
   const tick = useCallback(() => {
-    indexRef.current++;
-    const next = fullTextRef.current.slice(0, indexRef.current);
-    setDisplayedText(next);
+    const text = fullTextRef.current;
+    let pos = indexRef.current;
+    // Skip to end of next word (advance past whitespace, then past non-whitespace)
+    while (pos < text.length && /\s/.test(text[pos])) pos++;
+    while (pos < text.length && !/\s/.test(text[pos])) pos++;
+    indexRef.current = pos;
+    setDisplayedText(text.slice(0, pos));
 
-    if (indexRef.current < fullTextRef.current.length) {
-      timerRef.current = setTimeout(tick, CHAR_DELAY);
+    if (pos < text.length) {
+      timerRef.current = setTimeout(tick, WORD_DELAY);
     } else {
       setIsAutoTyping(false);
     }
@@ -37,7 +41,7 @@ export function useAutoType() {
       indexRef.current = 0;
       setDisplayedText("");
       setIsAutoTyping(true);
-      timerRef.current = setTimeout(tick, CHAR_DELAY);
+      timerRef.current = setTimeout(tick, WORD_DELAY);
     },
     [clearTimer, tick]
   );

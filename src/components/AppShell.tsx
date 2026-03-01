@@ -15,7 +15,7 @@ import { MODELS } from "@/lib/models";
 import { CHARACTERS } from "@/lib/characters";
 import { Conversation, Message, PreloadedConversation } from "@/types";
 
-const SIDEBAR_DEFAULT = 272;
+const SIDEBAR_DEFAULT = 320;
 const SIDEBAR_MIN = 200;
 const SIDEBAR_MAX = 480;
 
@@ -139,7 +139,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
         },
       }}
     >
-      <div className={`h-dvh flex bg-surface-0 ${isResizing ? "select-none" : ""}`}>
+      <div className={`h-dvh flex overflow-hidden bg-surface-0 ${isResizing ? "select-none" : ""}`}>
         <Sidebar
           conversations={conversations}
           onDeleteConversation={handleDelete}
@@ -151,7 +151,7 @@ export default function AppShell({ children }: { children: ReactNode }) {
           onResizeStart={handleResizeStart}
           isResizing={isResizing}
         />
-        <main className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 flex flex-col min-w-0 min-h-0 overflow-y-auto">
           {sidebarCollapsed && (
             <button
               onClick={handleToggleCollapse}

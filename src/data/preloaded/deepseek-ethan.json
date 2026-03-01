@@ -1,6 +1,6 @@
 {
   "id": "preloaded-deepseek-ethan",
-  "title": "DeepSeek + Ethan (Reality Glitch)",
+  "title": "DeepSeek V3 + Ethan (Reality Glitch)",
   "modelId": "deepseek/deepseek-chat-v3-0324",
   "modelLabel": "DeepSeek Chat v3",
   "characterId": "ethan",

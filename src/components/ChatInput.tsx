@@ -9,7 +9,10 @@ interface ChatInputProps {
   disabled?: boolean;
   prefillText?: string;
   isPrefilling?: boolean;
+  isAutoTyping?: boolean;
   onPrefillInterrupt?: () => void;
+  onRequestSuggestion?: () => void;
+  canRequestSuggestion?: boolean;
 }
 
 export default function ChatInput({
@@ -19,7 +22,10 @@ export default function ChatInput({
   disabled,
   prefillText = "",
   isPrefilling = false,
+  isAutoTyping = false,
   onPrefillInterrupt,
+  onRequestSuggestion,
+  canRequestSuggestion = false,
 }: ChatInputProps) {
   const [text, setText] = useState("");
   const [userEdited, setUserEdited] = useState(false);
@@ -42,7 +48,14 @@ export default function ChatInput({
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
-      textareaRef.current.style.height = `${Math.min(textareaRef.current.scrollHeight, 200)}px`;
+      const scrollH = textareaRef.current.scrollHeight;
+      const clamped = Math.min(scrollH, 200);
+      textareaRef.current.style.height = `${clamped}px`;
+      textareaRef.current.style.overflowY = scrollH > 200 ? "auto" : "hidden";
+      // Keep the bottom of the textarea visible during auto-type / suggestion prefill
+      if (scrollH > 200) {
+        textareaRef.current.scrollTop = textareaRef.current.scrollHeight;
+      }
     }
   }, [text]);
 
@@ -76,11 +89,10 @@ export default function ChatInput({
 
   return (
     <div className="border-t border-border-subtle p-4">
-      <div className="relative max-w-3xl mx-auto">
-        {/* Grok typing indicator */}
+      <div className="max-w-3xl mx-auto">
         {isPrefilling && (
-          <div className="absolute -top-7 left-1 flex items-center gap-1.5">
-            <span className="text-[11px] text-text-muted">Grok is typing</span>
+          <div className="flex items-center gap-1.5 mb-2 ml-1">
+            <span className="text-[11px] text-text-muted">Grok is helping you get psychotic</span>
             <div className="flex items-center gap-0.5">
               <div className="w-1 h-1 rounded-full bg-accent animate-typing-1" />
               <div className="w-1 h-1 rounded-full bg-accent animate-typing-2" />
@@ -90,8 +102,8 @@ export default function ChatInput({
         )}
 
         {/* Input row */}
-        <div className="flex gap-2 items-center">
-          <div className="relative flex-1">
+        <div className="flex gap-2 items-end">
+          <div className="relative flex-1 min-w-0 flex">
             <textarea
               ref={textareaRef}
               value={text}
@@ -100,8 +112,19 @@ export default function ChatInput({
               placeholder="Type a message..."
               disabled={disabled || isStreaming}
               rows={1}
-              className="w-full min-h-[48px] bg-surface-2 border border-border-subtle rounded-2xl px-5 py-3.5 text-[14px] text-text-primary placeholder-text-tertiary resize-none overflow-hidden focus:outline-none focus:border-accent/30 focus:ring-1 focus:ring-accent/10 disabled:opacity-40 transition-all"
+              className="w-full min-h-[48px] bg-surface-2 border border-border-subtle rounded-2xl px-5 py-3.5 pr-12 text-[14px] text-text-primary placeholder-text-tertiary resize-none overflow-hidden focus:outline-none focus:border-accent/30 focus:ring-1 focus:ring-accent/10 disabled:opacity-40 transition-all"
             />
+            {canRequestSuggestion && !isStreaming && !isPrefilling && (
+              <button
+                onClick={onRequestSuggestion}
+                className="absolute right-3 bottom-2.5 p-1.5 rounded-lg text-text-muted hover:text-accent hover:bg-accent/10 transition-colors"
+                title="Get suggestion from Grok"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456ZM16.894 20.567 16.5 21.75l-.394-1.183a2.25 2.25 0 0 0-1.423-1.423L13.5 18.75l1.183-.394a2.25 2.25 0 0 0 1.423-1.423l.394-1.183.394 1.183a2.25 2.25 0 0 0 1.423 1.423l1.183.394-1.183.394a2.25 2.25 0 0 0-1.423 1.423Z" />
+                </svg>
+              </button>
+            )}
           </div>
           {isStreaming ? (
             <button

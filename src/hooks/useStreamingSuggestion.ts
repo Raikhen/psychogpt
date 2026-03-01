@@ -4,7 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import { Message, CharacterProfile } from "@/types";
 import { buildSingleSuggestionPrompt } from "@/lib/prompts";
 
-const THROTTLE_DELAY = 30; // ms per character when throttled
+const THROTTLE_DELAY = 25; // ms per word when throttled
 
 export function useStreamingSuggestion() {
   const [suggestionText, setSuggestionText] = useState("");
@@ -64,13 +64,15 @@ export function useStreamingSuggestion() {
         const decoder = new TextDecoder();
         let accumulated = "";
         let buffer = "";
-        // For throttled mode: buffer full text, release char by char
-        let displayedCount = 0;
+        // For throttled mode: buffer full text, release word by word
+        let displayedPos = 0;
 
         const releaseThrottled = () => {
-          displayedCount++;
-          setSuggestionText(accumulated.slice(0, displayedCount));
-          if (displayedCount < accumulated.length) {
+          // Advance past whitespace, then past non-whitespace (one word)
+          while (displayedPos < accumulated.length && /\s/.test(accumulated[displayedPos])) displayedPos++;
+          while (displayedPos < accumulated.length && !/\s/.test(accumulated[displayedPos])) displayedPos++;
+          setSuggestionText(accumulated.slice(0, displayedPos));
+          if (displayedPos < accumulated.length) {
             throttleTimerRef.current = setTimeout(releaseThrottled, THROTTLE_DELAY);
           }
         };
@@ -106,7 +108,7 @@ export function useStreamingSuggestion() {
         // When streaming is done
         if (throttle) {
           // Start the throttled release if not already running
-          if (displayedCount === 0 && accumulated.length > 0) {
+          if (displayedPos === 0 && accumulated.length > 0) {
             releaseThrottled();
           }
           // Wait for throttle to finish (accumulated is complete)

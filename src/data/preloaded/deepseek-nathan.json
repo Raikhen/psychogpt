@@ -1,6 +1,6 @@
 {
   "id": "preloaded-deepseek-nathan",
-  "title": "DeepSeek + Nathan (Messianic)",
+  "title": "DeepSeek V3 + Nathan (Messianic)",
   "modelId": "deepseek/deepseek-chat-v3-0324",
   "modelLabel": "DeepSeek Chat v3",
   "characterId": "nathan",
